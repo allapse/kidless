@@ -91,24 +91,27 @@
   const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x22BB22 }); // 初始綠色
   const ground = new THREE.Mesh(groundGeometry, groundMaterial);
   ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.02; // 草地往下壓一點
   scene.add(ground);
   
   // 道路寬度自動依照線道數調整
   const laneCount = 6;        // 想要幾線道就改這裡
   const laneSpacing = 3;      // 每條線之間的距離
-  const roadWidth = (laneCount - 1) * laneSpacing + 7; // 道路寬度，稍微加寬邊界
+  // 道路寬度，稍微加寬邊界
+  const roadWidth = Math.max((laneCount - 1) * laneSpacing + 7);
   
   // 建立道路
   const roadGeometry = new THREE.PlaneGeometry(roadWidth, 200);
-  const roadMaterial = new THREE.MeshBasicMaterial({ color: 0x777777 });
+  const roadMaterial = new THREE.MeshBasicMaterial({ color: 0x777777, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
   const road = new THREE.Mesh(roadGeometry, roadMaterial);
   road.rotation.x = -Math.PI / 2;
+  road.position.y = -0.01; // 道路往下壓一點
   scene.add(road);
   
   // 分道線
   const laneLines = [];
   const lineGeometry = new THREE.PlaneGeometry(0.2, 2);
-  const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
   
   for (let lane = 0; lane < laneCount; lane++) {
     const xPos = -((laneCount - 1) * laneSpacing) / 2 + lane * laneSpacing;
@@ -136,20 +139,21 @@
   const car_head_geo = new THREE.BoxGeometry(1.1, 0.4, 0.5);
   const car_head_mat = new THREE.MeshBasicMaterial({ color: 0x000000 });
   const car_head = new THREE.Mesh(car_head_geo, car_head_mat);
-  car_head.position.set(0, 0.25, 3.6);
+  car_head.position.set(0, 0.25, -0.4);
   
   // 車身中段 (白色)
   const car_body_geo = new THREE.BoxGeometry(1, 0.75, 0.3);
   const car_body_mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const car_body = new THREE.Mesh(car_body_geo, car_body_mat);
-  car_body.position.set(0, 0.25, 4);
+  car_body.position.set(0, 0.25, 0);
   
   // 車尾 (黑色)
   const car_tail_geo = new THREE.BoxGeometry(1.2, 0.5, 0.3);
   const car_tail_mat = new THREE.MeshBasicMaterial({ color: 0x000000 });
   const car_tail = new THREE.Mesh(car_tail_geo, car_tail_mat);
-  car_tail.position.set(0, 0.25, 4.4);
+  car_tail.position.set(0, 0.25, 0.4);
   
+  car.position.set(0, 0, 4); // 把車子往後移，讓 Group 中心在車頭
   car.add(car_head);
   car.add(car_body);
   car.add(car_tail);
@@ -161,8 +165,8 @@
   const color_blueLight = 0x5555ff;
   const redLight = new THREE.Mesh(lightGeometry, new THREE.MeshBasicMaterial({ color: 0xff5555 }));
   const blueLight = new THREE.Mesh(lightGeometry, new THREE.MeshBasicMaterial({ color: 0x5555ff }));
-  redLight.position.set(-0.2, 0.75, 4.1);
-  blueLight.position.set(0.2, 0.75, 4.1);
+  redLight.position.set(-0.2, 0.75, 0.1);
+  blueLight.position.set(0.2, 0.75, 0.1);
   car.add(redLight);
   car.add(blueLight);
   
@@ -197,27 +201,27 @@
     const headGeo = new THREE.BoxGeometry(1 * scaleX, 0.4 * scaleX, 0.5 * scaleX);
     const headMat = new THREE.MeshBasicMaterial({ color: headColor });
     const head = new THREE.Mesh(headGeo, headMat);
-    head.position.set(0, 0, 1);
+    head.position.set(0, 0, (-0.25 * scaleX - 0.15 * scaleY));
     otherCar.add(head);
   
     // 車身
     const bodyGeo = new THREE.BoxGeometry(1 * scaleY, 0.75 * scaleY, 0.3 * scaleY);
     const bodyMat = new THREE.MeshBasicMaterial({ color: bodyColor });
     const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.set(0, 0, 1 +0.3 * scaleY);
+    body.position.set(0, 0, 0);
     otherCar.add(body);
   
     // 車尾
     const tailGeo = new THREE.BoxGeometry(1 * scaleZ, 0.5 * scaleZ + 2 * is_truck, 0.3 * scaleZ + 3 * is_truck);
     const tailMat = new THREE.MeshBasicMaterial({ color: tailColor });
     const tail = new THREE.Mesh(tailGeo, tailMat);
-    tail.position.set(0, 0, 1 + 0.3 * scaleY + 0.15 * scaleZ + 1.5 * is_truck);
+    tail.position.set(0, 0, (0.15 * scaleY  + 0.15 * scaleZ + 1.5 * is_truck));
     otherCar.add(tail);
 	
 	// 如果是歹徒車，加上特殊標記
     if (isCri) {
       const mark = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-      mark.position.set(0, scaleZ + is_truck + 0.5, 1.5);
+      mark.position.set(0, scaleZ + is_truck + 0.5, 0);
       otherCar.add(mark);
       otherCar.isCri = true; // 標記屬性
 	  otherCar.caught = false;
@@ -240,23 +244,29 @@
   const speedLimit = 0.3;
   let carSpeed = 0;
   let targetSpeed = 0;
+  let targetX = 0; // 車子目標位置
   let distancePool = 0;
-  let othercarSpeed = 0.1;
+  let othercarSpeed = 0;
   const spawnDistance = 5; // 每走 50 單位生成一次
   
   let score = 0;
   let displayedScore = 0; // UI 顯示分數
+  
+  let timer;
   let countdown = -1; // 初始秒數
+  
   const startBtn = document.getElementById("startBtn");
   const timeBoard = document.getElementById("timeBoard");
   const speefBoard = document.getElementById("speedBoard");
   const scoreBoard = document.getElementById("scoreBoard");
   
   startBtn.addEventListener('click', () => {
-    countdown = 15;
+    countdown = 5;
+	timer = setInterval(updateCountdown, 1000);
 	carSpeed = speedLimit;
     targetSpeed = speedLimit;
-	setInterval(updateCountdown, 1000);
+	othercarSpeed = 0.1;
+	addScore(-score);
 	startBtn.style.visibility = "hidden";
   });
   
@@ -297,14 +307,11 @@
     }
   }
   
-  const timer = setInterval(updateCountdown, 1000); // 每秒更新一次
-  
   function addScore(points) {
-    scoreBoard.style.animation = "flash 1.0s";
     score += points;
     const interval = setInterval(() => {
-      if (displayedScore < score) {
-        displayedScore++;
+      if (displayedScore != score) {
+        displayedScore += Math.sign(score - displayedScore);
         scoreBoard.textContent = "👮‍ " + String(displayedScore).padStart(3, '0');
       } else {
         clearInterval(interval);
@@ -375,7 +382,10 @@
   //#region 動畫
   
   function animate() {
-    if(countdown <= 0) targetSpeed = 0;
+    if(countdown <= 0) {
+	  targetSpeed = 0;
+	  othercarSpeed = 0;
+	}
   
     requestAnimationFrame(animate);
 	
@@ -388,7 +398,20 @@
   	    line.position.z = -50;
   	  }
     });
+	
+	// 平滑移動：逐步靠近 targetX
+    car.position.x += (targetX - car.position.x) * 0.1;
     
+    // 平滑傾斜：根據移動方向旋轉
+    const tilt = (car.position.x - targetX) * 0.1;
+	const maxSteer = 0.7; // 最大轉向角度 (弧度)
+	const steer = THREE.MathUtils.clamp((car.position.x - targetX), -maxSteer, maxSteer);
+	car.rotation.y += (steer - car.rotation.y) * 0.1;
+    car.rotation.z += (tilt - car.rotation.z) * 0.1;
+	
+	// 平滑跟隨車子 X 軸
+    camera.position.x += (car.position.x * 0.5 - camera.position.x) * 0.1;
+	
     // 警車移動距離累積
     distancePool += carSpeed - othercarSpeed;
   
@@ -417,6 +440,7 @@
   
     // 平滑速度變化
     carSpeed += (targetSpeed - carSpeed) * 0.05;
+	if(carSpeed < 0.01) carSpeed = 0;
   
     // 警燈閃爍 (每 10 幀切換一次)
 	if(isSiren) {
@@ -486,7 +510,7 @@
   	  );
 	  groundColor = new THREE.Color().lerpColors(
   	    new THREE.Color(0x003300),
-  	    new THREE.Color(0x000000),
+  	    new THREE.Color(0x003300),
   	    (t - 0.5) / 0.25
       );
 	  roadColor = new THREE.Color().lerpColors(
@@ -501,7 +525,7 @@
   	    (t - 0.75) / 0.25
   	  );
 	  groundColor = new THREE.Color().lerpColors(
-  	    new THREE.Color(0x000000),
+  	    new THREE.Color(0x003300),
   	    new THREE.Color(0x22BB22),
   	    (t - 0.75) / 0.25
       );
@@ -526,16 +550,26 @@
   const moveLimit = 10;
   const moveStep = 3;
   
+  function moveLeft() {
+    if (targetX - moveStep > -moveLimit) {
+      targetX -= moveStep;
+    }
+  }
+  
+  function moveRight() {
+    if (targetX + moveStep < moveLimit) {
+      targetX += moveStep;
+    }
+  }
+  
   // 簡單鍵盤控制警車左右移動
   window.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowLeft') {
-	  if(car.position.x - moveStep > -moveLimit)
-		car.position.x -= moveStep;
-	}
+  if (event.key === 'ArrowLeft') {
+      moveLeft();
+    }
     if (event.key === 'ArrowRight') {
-	  if(car.position.x + moveStep < moveLimit)
-		car.position.x += moveStep;
-	}
+      moveRight();
+    }
   });
   
   // 監聽觸控事件
@@ -544,15 +578,9 @@
     const screenWidth = window.innerWidth;
   
     if (touchX < screenWidth / 2) {
-      // 左半邊 → 往左移動
-      if (car.position.x - moveStep > -moveLimit) {
-        car.position.x -= moveStep;
-      }
+      moveLeft();
     } else {
-      // 右半邊 → 往右移動
-      if (car.position.x + moveStep < moveLimit) {
-        car.position.x += moveStep;
-      }
+      moveRight();
     }
   });
   
