@@ -27,6 +27,7 @@
       align-items: center;
 	  overflow: hidden;
 	  white-space: nowrap;
+	  z-index: 10; /* 保證在最上面 */
 	}
 	
 	#startBtn span {
@@ -260,8 +261,8 @@
   const speefBoard = document.getElementById("speedBoard");
   const scoreBoard = document.getElementById("scoreBoard");
   
-  startBtn.addEventListener('click', () => {
-    countdown = 5;
+  startBtn.addEventListener('click', (event) => {
+    countdown = 60;
 	timer = setInterval(updateCountdown, 1000);
 	carSpeed = speedLimit;
     targetSpeed = speedLimit;
@@ -410,7 +411,7 @@
     car.rotation.z += (tilt - car.rotation.z) * 0.1;
 	
 	// 平滑跟隨車子 X 軸
-    camera.position.x += (car.position.x * 0.5 - camera.position.x) * 0.1;
+    camera.position.x += (car.position.x * 0.7 - camera.position.x) * 0.1;
 	
     // 警車移動距離累積
     distancePool += carSpeed - othercarSpeed;
@@ -574,6 +575,10 @@
   
   // 監聽觸控事件
   window.addEventListener('touchstart', (event) => {
+    if (event.target.closest("#startBtn")) {
+      return; // 如果點到按鈕，就不要移動車道
+    }
+	
     const touchX = event.touches[0].clientX; // 取得觸控點的 X 座標
     const screenWidth = window.innerWidth;
   
